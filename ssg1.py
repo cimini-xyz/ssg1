@@ -1,3 +1,5 @@
+import re
+
 def format_filename_string(filename_string, article_title):
     slugged_article_title = re.sub(r'[^a-zA-Z0-9 ]','', article_title)
     filename_string = re.sub(r'\s+','-', slugged_article_title)
