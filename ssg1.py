@@ -1,4 +1,4 @@
-def format_filename(filename_string ,article_title):
+def format_filename_string(filename_string ,article_title):
     pass
 
 def update_filename_on_system(filename_string):
