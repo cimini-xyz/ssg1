@@ -20,7 +20,7 @@ def truncate_filename_string(filename_string):
         if split_index == 0 or len(split[0]) > 240:
             filename_string = filename_string[:240]
         else: 
-            while split_index and string_len - c_count > 240:
+            while split_index and string_len - (c_count := 0) > 240:
                 c_count += len(split[split_index])
                 c_count += int(split_index > 0)
                 split_index = max(0, split_index - 1)
@@ -32,6 +32,9 @@ def remove_reserved_name(filename_string):
         return ""
     return filename_string
 
+def generate_unique_filename_string():
+    pass
+
 def format_filename_string(article_title):
     # Convert article title into slugged file name for its html document
     filename_string = remove_non_alphanumeric_char(article_title)
@@ -41,7 +44,7 @@ def format_filename_string(article_title):
     filename_string = remove_reserved_name(filename_string)
     # Need to generate unique ID if string is none at this stage
     if not filename_string:
-        filename_string = 
+        filename_string = generate_unique_filename_string()
     return filename_string + ".html"
 
 def update_filename_on_system(file_path, filename_string):
