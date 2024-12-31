@@ -6,7 +6,6 @@ def update_filename_on_system(filename_string):
 
 def process_filename(filename_string, article_title):
     valid_filename_string = format_filename_string(filename, article_title)
-    if not valid_filename_string != file_name_string
-        return
-    update_filename_on_system(valid_filename_string)
+    if not valid_filename_string == file_name_string
+        update_filename_on_system(valid_filename_string)
         
