@@ -15,7 +15,8 @@ GENERATED_FILENAMES = set()
 
 def main():
     html_dir = Path("html")
-    html_files = html_dir.glob("*.html")
+    articles_dir = html_dir / "article/"
+    html_files = articles_dir.glob("*.html")
     articles = []
 
     for html_file in html_files:
@@ -23,6 +24,25 @@ def main():
         parser.parse()
         process_filename(parser)
         articles.append(parser.to_named_tuple())
+    
+    index_path = html_dir / "index.html"
+    index_path.write_text(generate_page(generate_article_index_page(sorted(articles, key=lambda article: article.published, reverse=True))))
+
+def generate_page(content):
+    return f"""
+<!DOCTYPE html>
+<html>
+<head><title>Articles</title></head>
+<body>
+{content}
+</body>
+</html>
+"""
+
+def generate_article_index_page(articles):
+    return "<ul class=\"articles\">" + "\n".join(
+        f"<li><a href=\"{article.file.name}\">{article.title}</a>{article.published.strftime(' – %b %-d')}"  for article in articles
+    ) + "\n</ul>\n"
 
 class ArticleParser(HTMLParser):
     article_title = None
@@ -116,7 +136,7 @@ def generate_unique_filename():
             
 def format_filename(article_title):
     filename = ""
-    if has_alphanumeric(article_title):
+    if article_title and has_alphanumeric(article_title):
         filename = remove_non_alphanumeric(article_title)
         filename = replace_whitespace(filename, '-')
         filename = filename.lower()
