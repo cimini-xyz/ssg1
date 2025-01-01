@@ -1,10 +1,22 @@
-# SSG1 (Static Site Generator)
+# Static Site Generator
 
-A simple static site generator built in Python that converts HTML files into a blog-style website.
+A focused HTML static site generator that handles site organization and index generation.
+
+## Design Philosophy
+
+This SSG follows the Unix philosophy of "do one thing well". It focuses specifically on organizing and generating HTML site structure, leaving markup conversion (like Markdown to HTML) to specialized tools of your choice.
 
 ## Features
-- Converts HTML files with metadata into blog posts
-- Generates an index page of all articles
-- Sorts articles by publication date
-- Supports article categories
-- Creates clean URLs from article titles
+
+- Handles HTML input files
+- Generates organized index pages
+- Supports multiple grouping strategies (--group option):
+  - flat: no grouping
+  - year: group by year
+  - yearmonth: group by year and month
+  - category: group by category
+
+## Usage
+
+1. Convert your markup files to HTML using your preferred tool (pandoc, markdown, etc)
+2. Run the SSG to generate your site structure:
