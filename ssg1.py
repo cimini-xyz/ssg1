@@ -16,11 +16,13 @@ GENERATED_FILENAMES = set()
 def main():
     html_dir = Path("html")
     html_files = html_dir.glob("*.html")
+    articles = []
 
     for html_file in html_files:
         parser = ArticleParser(html_file)
         parser.parse()
         process_filename(parser)
+        articles.append(parser.to_named_tuple())
 
 class ArticleParser(HTMLParser):
     article_title = None
