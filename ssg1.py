@@ -103,9 +103,9 @@ def format_filename(article_title):
         filename = generate_unique_filename()
     return filename + ".html"
 
-def process_filename(html_file, filename_string, article_title):
+def process_filename(html_file, article_title):
     valid_filename_string = format_filename(article_title)
-    if not valid_filename_string == filename_string:
+    if not valid_filename_string == html_file.name:
         html_file.rename(html_file.parent / valid_filename_string)
         
 main()
