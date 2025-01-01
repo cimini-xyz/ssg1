@@ -30,6 +30,7 @@ class ArticleParser(HTMLParser):
     html_file = None
 
     def __init__(self, html_file):
+        super().__init__()
         self.html_file = html_file
 
     def parse(self):
