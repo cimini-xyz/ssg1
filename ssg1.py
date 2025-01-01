@@ -4,7 +4,7 @@ import random
 from html.parser import HTMLParser
 from pathlib import Path
 from shutil import move, copy2
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 Article = namedtuple('Article', ['file', 'title', 'published', 'category'])
 
@@ -26,7 +26,9 @@ def main():
         articles.append(parser.to_named_tuple())
     
     index_path = html_dir / "index.html"
-    index_path.write_text(generate_page(generate_article_index_page(sorted(articles, key=lambda article: article.published, reverse=True))))
+    sorted_articles = sort_articles_by_published_time(articles)
+    article_index = render_grouped_index(group_articles_by_year_month(sorted_articles))
+    index_path.write_text(generate_page(article_index))
 
 def generate_page(content):
     return f"""
@@ -39,10 +41,50 @@ def generate_page(content):
 </html>
 """
 
-def generate_article_index_page(articles):
-    return "<ul class=\"articles\">" + "\n".join(
-        f"<li><a href=\"{article.file.name}\">{article.title}</a>{article.published.strftime(' – %b %-d')}"  for article in articles
-    ) + "\n</ul>\n"
+def generate_index_list_item(article):
+    return (
+        f'<li><a href="{article.file.name}">'
+        f'{article.title}</a>'
+        f'{article.published.strftime(" – %b %-d")}'
+    )
+
+def sort_articles_by_published_time(articles):
+    return sorted(
+        articles, 
+        key=lambda article: 
+        article.published, 
+        reverse=True)
+
+def group_articles_by_year(articles):
+    groups = defaultdict(list)
+    for article in articles:
+        key = article.published.date().year
+        groups[key].append(article)
+    return groups
+
+def group_articles_by_year_month(articles):
+    groups = defaultdict(list)
+    for article in articles:
+        key = article.published.strftime("%Y %b")
+        groups[key].append(article)
+    return groups
+    
+
+def render_article_index(articles):
+    lines = ["<ul class=\"articles\">"]
+    for article in articles:
+        lines.append(generate_index_list_item(article))
+    lines.append("</ul>")
+    return "\n".join(lines)
+
+def render_grouped_index(groups):
+    lines = ["<ul class=\"articles\">"]
+    for group in groups.keys():
+        lines.append(f"<h3>{group}</h3>")
+        for article in groups[group]:
+            lines.append(generate_index_list_item(article))
+    lines.append("</ul>")
+    return "\n".join(lines)
 
 class ArticleParser(HTMLParser):
     article_title = None
