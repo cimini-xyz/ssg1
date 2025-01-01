@@ -4,6 +4,7 @@ import random
 
 RESERVED_NAMES = ["PRN", "CON", "NUL", "AUX"]
 RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in range (1,10))
+GENERATED_FILENAMES = set()
 
 def main():
     pass
@@ -34,9 +35,20 @@ def remove_reserved_filename(filename):
         return ""
     return filename
 
-def generate_unique_filename():
-    return "article-" + datetime.now().strftime("%H%M%S%f")[:-6] + str(random.randint(1000,9999))
+def generate_article_id():
+    return f"article-{datetime.now().strftime('%H%M%S%f')[:-6]}{str(random.randint(1000,9999))}"
 
+def generate_unique_filename():
+    retry_count, retry_limit = 0, 10 
+    filename = generate_article_id()
+    while filename in GENERATED_FILENAMES and retry_count < retry_limit:
+        filename = generate_article_id()
+        retry_count += 1
+    if retry_count >= retry_limit:
+        raise RuntimeError(f"Failed to generate unique filename after {retry_limit} attempts")
+    GENERATED_FILENAMES.add(filename)
+    return filename
+            
 def format_filename(article_title):
     # Convert article title into slugged file name for its html document
     filename = remove_non_alphanumeric(article_title)
