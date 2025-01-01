@@ -40,13 +40,23 @@ def main():
     sorted_articles = sort_articles_by_published_time(articles)
 
     grouping_strategies = {
-        'year' : group_by_year ,
-        'yearmonth' : group_by_year_month ,
-        'category' : group_by_category
+        'year' : {
+            'group_function' : group_by_year ,
+            'timestamp' : " – %b %-d"
+        } ,
+        'yearmonth' : {
+            'group_function' : group_by_year_month ,
+            'timestamp' : " – %b %-d"
+        } ,
+        'category' : {
+            'group_function' : group_by_category ,
+            'timestamp' : " – %b %-d %Y"
+        }
     }
-
-    if parsed_args.group.lower() in grouping_strategies:
-        article_index = render_grouped_index(group_articles(sorted_articles, grouping_strategies[parsed_args.group.lower()]))
+    
+    if parsed_args.group in grouping_strategies:
+        strategy = grouping_strategies[parsed_args.group]
+        article_index = render_grouped_index(group_articles(sorted_articles, strategy['group_function']), strategy['timestamp'])
     else:
         article_index = render_article_index(sorted_articles)
  
@@ -63,18 +73,21 @@ def generate_page(content):
 </html>
 """
 
-def generate_index_list_item(article):
+def generate_index_list_item(article, timestamp_format=" – %b %-d %Y"):
+    published_strftime = ""
+    if article.published:
+        published_strftime = article.published.strftime(timestamp_format)
     return (
         f'<li><a href="{article.file.name}">'
         f'{article.title}</a>'
-        f'{article.published.strftime(" – %b %-d")}'
+        f'{published_strftime}'
     )
 
 def sort_articles_by_published_time(articles):
     return sorted(
         articles, 
         key=lambda article: 
-        article.published, 
+        (article.published is None, article.published), 
         reverse=True)
 
 def group_articles(articles, group_function):
@@ -85,10 +98,12 @@ def group_articles(articles, group_function):
     return groups
 
 def group_by_year(article):
-    return article.published.date().year
+    if isinstance(article.published, datetime):
+        return article.published.strftime("%Y %b")
 
 def group_by_year_month(article):
-    return article.published.strftime("%Y %b")
+    if isinstance(article.published, datetime):
+        return article.published.strftime("%Y %b")
 
 def group_by_category(article):
     return article.category
@@ -100,54 +115,59 @@ def render_article_index(articles):
     lines.append("</ul>")
     return "\n".join(lines)
 
-def render_grouped_index(groups):
+def render_grouped_index(groups, timestamp):
     lines = ["<ul class=\"articles\">"]
     for group in groups.keys():
         lines.append(f"<h3>{group}</h3>")
         for article in groups[group]:
-            lines.append(generate_index_list_item(article))
+            lines.append(generate_index_list_item(article, timestamp))
     lines.append("</ul>")
     return "\n".join(lines)
 
 class ArticleParser(HTMLParser):
-    article_title = None
-    published_time = None
-    category_type = None
-    open_tag = None
-    html_file = None
+    
 
     def __init__(self, html_file):
         super().__init__()
+        self.metadata = defaultdict(None)
+        self.metadata['title'] = None
+        self.metadata['category'] = None
+        self.metadata['published'] = None
+        
+        self.open_tag = None
         self.html_file = html_file
 
     def parse(self):
         self.feed(self.html_file.read_text())
 
+    def done(self):
+        return 
+    
     def handle_starttag(self, tag, attrs):
         self.open_tag = tag
-        attrs_dict = dict(attrs)
-        if tag == "time" and not self.published_time and "datetime" in attrs_dict:
-            try:
-                self.published_time = datetime.strptime(attrs_dict['datetime'], "%m/%d/%Y %H:%M:%S")
-            except ValueError:
-                pass
-        if tag == "category" and not self.category_type and "type" in attrs_dict:
-            self.category_type = attrs_dict['type']
+        if not self.done() and tag == "meta":
+            attrs_dict = dict(attrs)
+            for key in self.metadata.keys():
+                if not self.metadata[key] and key == attrs_dict["name"]:
+                    self.metadata[key] = attrs_dict["content"]
 
     def handle_endtag(self, tag):
         self.open_tag = None
     
     def handle_data(self, data):
-        if self.open_tag == "h1" and self.article_title is None:
-            self.article_title = data
+        pass
+        #if self.open_tag == "h1" and self.article_title is None:
+        #    self.article_title = data
 
     def to_named_tuple(self):
-        return Article(
-            self.html_file,
-            self.article_title,
-            self.published_time,
-            self.category_type
-        )
+        if self.metadata["published"]:
+            try:
+                self.metadata["published"] = datetime.strptime(self.metadata["published"], "%m/%d/%Y %H:%M:%S")
+            except ValueError:
+                pass
+        else:
+            self.metadata["published"] = datetime.fromtimestamp(0)
+        return Article( self.html_file, **self.metadata )
 
 
 def has_alphanumeric(article_title):
@@ -164,16 +184,11 @@ def truncate_filename(filename):
         split = filename.split("-")
         split_index = len(split) - 1
 
-        print(filename,"\n",string_len,split_index, len(split[0]))
-
         if split_index == 0 or len(split[0]) > 240:
             filename = filename[:240]
         else: 
             c_count = 0
             while split_index and string_len - c_count > 240:
-                print(split_index)
-                print(split[split_index])
-                print(len(split[split_index]))
                 c_count += len(split[split_index])
                 c_count += int(split_index > 0)
                 split_index = max(0, split_index - 1)
@@ -213,8 +228,8 @@ def format_filename(article_title):
 
 def process_filename(parser):
     html_file = parser.html_file
-    valid_filename_string = format_filename(parser.article_title)
-    if not valid_filename_string == html_file.name:
+    valid_filename_string = format_filename(parser.metadata["title"])
+    if not valid_filename_string == html_file.name and valid_filename_string:
         html_file.rename(html_file.parent / valid_filename_string)
         
 main()
