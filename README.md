@@ -1,8 +1,10 @@
 # Static Site Generator
 
-Disclaimer: At the moment, this README.md is AI generated.
-
 A focused HTML static site generator that handles site organization and index generation.
+
+## Note on Documentation
+
+This README was generated with the assistance of an AI language model, while the codebase itself was written by me. The documentation has been verified for accuracy and completeness.
 
 ## Design Philosophy
 
