@@ -16,7 +16,7 @@ def main():
     for html_file in html_files:
         parser = ArticleParser()
         parser.feed(html_file.read_text())
-        process_filename(html_file, html_file.name, parser.article_title)
+        process_filename(html_file, parser.article_title)
 
 class ArticleParser(HTMLParser):
     article_title = None
