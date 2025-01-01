@@ -7,12 +7,11 @@ RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in
 GENERATED_FILENAMES = set()
 
 def main():
-    print(format_filename("Exploring Python Decorators!!!"))
-    print(format_filename(""))
-    print(format_filename("COM2"))
-    print(format_filename("PRN.html"))
-    print(format_filename("Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python"))
-    print(GENERATED_FILENAMES)
+    pass
+    
+
+def has_alphanumeric(article_title):
+    return bool(re.search(r'[a-zA-Z0-9]', article_title))
 
 def remove_non_alphanumeric(text):
     return re.sub(r'[^a-zA-Z0-9 ]','', text)
@@ -61,11 +60,13 @@ def generate_unique_filename():
     return filename
             
 def format_filename(article_title):
-    filename = remove_non_alphanumeric(article_title)
-    filename = replace_whitespace(filename, '-')
-    filename = filename.lower()
-    filename = truncate_filename(filename)
-    filename = remove_reserved_filename(filename)
+    filename = ""
+    if has_alphanumeric(article_title):
+        filename = remove_non_alphanumeric(article_title)
+        filename = replace_whitespace(filename, '-')
+        filename = filename.lower()
+        filename = truncate_filename(filename)
+        filename = remove_reserved_filename(filename)
     if not filename:
         filename = generate_unique_filename()
     return filename + ".html"
