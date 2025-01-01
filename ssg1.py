@@ -4,6 +4,10 @@ import random
 from html.parser import HTMLParser
 from pathlib import Path
 from shutil import move, copy2
+from collections import namedtuple
+
+Article = namedtuple('Article', ['file', 'title', 'published', 'category'])
+
 
 RESERVED_NAMES = ["PRN", "CON", "NUL", "AUX"]
 RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in range (1,10))
@@ -14,15 +18,22 @@ def main():
     html_files = html_dir.glob("*.html")
 
     for html_file in html_files:
-        parser = ArticleParser()
-        parser.feed(html_file.read_text())
-        process_filename(html_file, parser.article_title)
+        parser = ArticleParser(html_file)
+        parser.parse()
+        process_filename(parser)
 
 class ArticleParser(HTMLParser):
     article_title = None
     published_time = None
     category_type = None
     open_tag = None
+    html_file = None
+
+    def __init__(self, html_file):
+        self.html_file = html_file
+
+    def parse(self):
+        self.feed(self.html_file.read_text())
 
     def handle_starttag(self, tag, attrs):
         self.open_tag = tag
@@ -41,6 +52,15 @@ class ArticleParser(HTMLParser):
     def handle_data(self, data):
         if self.open_tag == "h1" and self.article_title is None:
             self.article_title = data
+
+    def to_named_tuple(self):
+        return Article(
+            self.html_file,
+            self.article_title,
+            self.published_time,
+            self.category_type
+        )
+
 
 def has_alphanumeric(article_title):
     return bool(re.search(r'[a-zA-Z0-9]', article_title))
@@ -103,8 +123,9 @@ def format_filename(article_title):
         filename = generate_unique_filename()
     return filename + ".html"
 
-def process_filename(html_file, article_title):
-    valid_filename_string = format_filename(article_title)
+def process_filename(parser):
+    html_file = parser.html_file
+    valid_filename_string = format_filename(parser.article_title)
     if not valid_filename_string == html_file.name:
         html_file.rename(html_file.parent / valid_filename_string)
         
