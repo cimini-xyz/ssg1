@@ -1,6 +1,9 @@
 import re
 from datetime import datetime
-import random 
+import random
+from html.parser import HTMLParser
+from pathlib import Path
+from shutil import move, copy2
 
 RESERVED_NAMES = ["PRN", "CON", "NUL", "AUX"]
 RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in range (1,10))
@@ -8,7 +11,30 @@ GENERATED_FILENAMES = set()
 
 def main():
     pass
+
+class ArticleParser(HTMLParser):
+    article_title = None
+    published_time = None
+    category_type = None
+    open_tag = None
+
+    def handle_starttag(self, tag, attrs):
+        self.open_tag = tag
+        attrs_dict = dict(attrs)
+        if tag == "time" and not self.published_time and "datetime" in attrs_dict:
+            try:
+                self.published_time = datetime.strptime(attrs_dict['datetime'], "%m/%d/%Y %H:%M:%S")
+            except ValueError:
+                pass
+        if tag == "category" and not self.category_type and "type" in attrs_dict:
+            self.category_type = attrs_dict['type']
+
+    def handle_endtag(self, tag):
+        self.open_tag = None
     
+    def handle_data(self, data):
+        if self.open_tag == "h1" and self.article_title is None:
+            self.article_title = data
 
 def has_alphanumeric(article_title):
     return bool(re.search(r'[a-zA-Z0-9]', article_title))
