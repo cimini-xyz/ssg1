@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from shutil import move, copy2
 from collections import namedtuple, defaultdict
+import argparse
 
 Article = namedtuple('Article', ['file', 'title', 'published', 'category'])
 
@@ -14,20 +15,41 @@ RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in
 GENERATED_FILENAMES = set()
 
 def main():
+    arg_parser = argparse.ArgumentParser(description='Static Site Generator')
+    arg_parser.add_argument(
+        '--group', 
+        default='flat', 
+        choices=['flat', 'year', 'yearmonth', 'category'],
+        help='Groups article list on main page by year, year-month, category, or none'
+    )
+    parsed_args = arg_parser.parse_args()
+
     html_dir = Path("html")
     articles_dir = html_dir / "article/"
     html_files = articles_dir.glob("*.html")
+    
     articles = []
 
     for html_file in html_files:
-        parser = ArticleParser(html_file)
-        parser.parse()
-        process_filename(parser)
-        articles.append(parser.to_named_tuple())
+        html_parser = ArticleParser(html_file)
+        html_parser.parse()
+        process_filename(html_parser)
+        articles.append(html_parser.to_named_tuple())
     
     index_path = html_dir / "index.html"
     sorted_articles = sort_articles_by_published_time(articles)
-    article_index = render_grouped_index(group_articles_by_year_month(sorted_articles))
+
+    grouping_strategies = {
+        'year' : group_by_year ,
+        'yearmonth' : group_by_year_month ,
+        'category' : group_by_category
+    }
+
+    if parsed_args.group.lower() in grouping_strategies:
+        article_index = render_grouped_index(group_articles(sorted_articles, grouping_strategies[parsed_args.group.lower()]))
+    else:
+        article_index = render_article_index(sorted_articles)
+ 
     index_path.write_text(generate_page(article_index))
 
 def generate_page(content):
@@ -55,21 +77,22 @@ def sort_articles_by_published_time(articles):
         article.published, 
         reverse=True)
 
-def group_articles_by_year(articles):
+def group_articles(articles, group_function):
     groups = defaultdict(list)
     for article in articles:
-        key = article.published.date().year
+        key = group_function(article)
         groups[key].append(article)
     return groups
 
-def group_articles_by_year_month(articles):
-    groups = defaultdict(list)
-    for article in articles:
-        key = article.published.strftime("%Y %b")
-        groups[key].append(article)
-    return groups
+def group_by_year(article):
+    return article.published.date().year
+
+def group_by_year_month(article):
+    return article.published.strftime("%Y %b")
+
+def group_by_category(article):
+    return article.category
     
-
 def render_article_index(articles):
     lines = ["<ul class=\"articles\">"]
     for article in articles:
