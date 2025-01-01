@@ -10,7 +10,13 @@ RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in
 GENERATED_FILENAMES = set()
 
 def main():
-    pass
+    html_dir = Path("html")
+    html_files = html_dir.glob("*.html")
+
+    for html_file in html_files:
+        parser = ArticleParser()
+        parser.feed(html_file.read_text())
+        process_filename(html_file, html_file.name, parser.article_title)
 
 class ArticleParser(HTMLParser):
     article_title = None
@@ -97,12 +103,9 @@ def format_filename(article_title):
         filename = generate_unique_filename()
     return filename + ".html"
 
-def move_file(file_path, filename_string):
-    file_path.source.move(file_path.source.parents[0] / filename_string)
-
-def process_filename(file_path, filename_string, article_title):
+def process_filename(html_file, filename_string, article_title):
     valid_filename_string = format_filename(article_title)
     if not valid_filename_string == filename_string:
-        move_file(file_path, valid_filename_string)
+        html_file.rename(html_file.parent / valid_filename_string)
         
 main()
