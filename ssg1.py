@@ -7,7 +7,12 @@ RESERVED_NAMES += list(f"COM{i}" for i in range(1,10)) + list(f"LPT{i}" for i in
 GENERATED_FILENAMES = set()
 
 def main():
-    pass
+    print(format_filename("Exploring Python Decorators!!!"))
+    print(format_filename(""))
+    print(format_filename("COM2"))
+    print(format_filename("PRN.html"))
+    print(format_filename("Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python Decorators!!!Exploring Python"))
+    print(GENERATED_FILENAMES)
 
 def remove_non_alphanumeric(text):
     return re.sub(r'[^a-zA-Z0-9 ]','', text)
@@ -20,10 +25,16 @@ def truncate_filename(filename):
         split = filename.split("-")
         split_index = len(split) - 1
 
+        print(filename,"\n",string_len,split_index, len(split[0]))
+
         if split_index == 0 or len(split[0]) > 240:
             filename = filename[:240]
         else: 
-            while split_index and string_len - (c_count := 0) > 240:
+            c_count = 0
+            while split_index and string_len - c_count > 240:
+                print(split_index)
+                print(split[split_index])
+                print(len(split[split_index]))
                 c_count += len(split[split_index])
                 c_count += int(split_index > 0)
                 split_index = max(0, split_index - 1)
@@ -39,7 +50,7 @@ def generate_article_id():
     return f"article-{datetime.now().strftime('%H%M%S%f')[:-6]}{str(random.randint(1000,9999))}"
 
 def generate_unique_filename():
-    retry_count, retry_limit = 0, 10 
+    retry_count, retry_limit = 0, 1000 
     filename = generate_article_id()
     while filename in GENERATED_FILENAMES and retry_count < retry_limit:
         filename = generate_article_id()
@@ -50,13 +61,11 @@ def generate_unique_filename():
     return filename
             
 def format_filename(article_title):
-    # Convert article title into slugged file name for its html document
     filename = remove_non_alphanumeric(article_title)
     filename = replace_whitespace(filename, '-')
     filename = filename.lower()
     filename = truncate_filename(filename)
     filename = remove_reserved_filename(filename)
-    # Need to generate unique ID if string is none at this stage
     if not filename:
         filename = generate_unique_filename()
     return filename + ".html"
