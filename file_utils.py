@@ -3,6 +3,7 @@ from datetime import datetime
 import random
 
 
+
 RESERVED_NAMES = ["PRN", "CON", "NUL", "AUX"]
 RESERVED_NAMES += list(f"COM{i}" for i in range(1, 10)) + \
     list(f"LPT{i}" for i in range(1, 10))
