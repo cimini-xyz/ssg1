@@ -14,7 +14,7 @@ class ArticleParser(HTMLParser):
         self.metadata['title'] = None
         self.metadata['category'] = None
         self.metadata['published'] = None
-        
+
         self.open_tag = None
         self.html_file = html_file
 
@@ -22,8 +22,8 @@ class ArticleParser(HTMLParser):
         self.feed(self.html_file.read_text())
 
     def done(self):
-        return 
-    
+        return
+
     def handle_starttag(self, tag, attrs):
         self.open_tag = tag
         if not self.done() and tag == "meta":
@@ -34,18 +34,19 @@ class ArticleParser(HTMLParser):
 
     def handle_endtag(self, tag):
         self.open_tag = None
-    
+
     def handle_data(self, data):
         pass
-        #if self.open_tag == "h1" and self.article_title is None:
+        # if self.open_tag == "h1" and self.article_title is None:
         #    self.article_title = data
 
     def to_named_tuple(self):
         if self.metadata["published"]:
             try:
-                self.metadata["published"] = datetime.strptime(self.metadata["published"], "%m/%d/%Y %H:%M:%S")
+                self.metadata["published"] = datetime.strptime(
+                    self.metadata["published"], "%m/%d/%Y %H:%M:%S")
             except ValueError:
                 pass
         else:
             self.metadata["published"] = datetime.fromtimestamp(0)
-        return Article( self.html_file, **self.metadata )
+        return Article(self.html_file, **self.metadata)
