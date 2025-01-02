@@ -117,11 +117,15 @@ def render_article_index(articles):
 
 def render_grouped_index(groups, timestamp):
     lines = ["<ul class=\"articles\">"]
+
     for group in groups.keys():
         lines.append(f"<h3>{group}</h3>")
+
         for article in groups[group]:
             lines.append(generate_index_list_item(article, timestamp))
+
     lines.append("</ul>")
+
     return "\n".join(lines)
 
 class ArticleParser(HTMLParser):
@@ -213,15 +217,24 @@ def generate_unique_filename():
         raise RuntimeError(f"Failed to generate unique filename after {retry_limit} attempts")
     GENERATED_FILENAMES.add(filename)
     return filename
-            
+
+def slugify_string(string):
+    slug = remove_non_alphanumeric(string)
+    slug = replace_whitespace(slug, '-')
+    slug = slug.lower()
+    return slug
+
+def sanitize_filename(filename):
+    filename = truncate_filename(filename)
+    filename = remove_reserved_filename(filename)
+    return filename
+
 def format_filename(article_title):
     filename = ""
+    # remove article_title check?
     if article_title and has_alphanumeric(article_title):
-        filename = remove_non_alphanumeric(article_title)
-        filename = replace_whitespace(filename, '-')
-        filename = filename.lower()
-        filename = truncate_filename(filename)
-        filename = remove_reserved_filename(filename)
+        filename = slugify_string(article_title)
+        filename = sanitize_filename(filename)
     if not filename:
         filename = generate_unique_filename()
     return filename + ".html"
