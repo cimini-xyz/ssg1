@@ -174,8 +174,8 @@ class ArticleParser(HTMLParser):
         return Article( self.html_file, **self.metadata )
 
 
-def has_alphanumeric(article_title):
-    return bool(re.search(r'[a-zA-Z0-9]', article_title))
+def has_alphanumeric(text):
+    return bool(re.search(r'[a-zA-Z0-9]', text))
 
 def remove_non_alphanumeric(text):
     return re.sub(r'[^a-zA-Z0-9 ]','', text)
