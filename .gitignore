@@ -1,6 +1,8 @@
 md/
 html/
 out/
+stage/
+template/
 
 # Python cache files
 __pycache__/

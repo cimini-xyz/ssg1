@@ -15,20 +15,23 @@ import argparse
 
 def main():
     cmd_args = parse_arguments()
-    html_dir = Path("html")
+    html_dir = Path("stage")
     articles = process_files(html_dir)
 
     sorted_articles = sort_articles_by_published_time(articles)
-    index_file_path = html_dir / "index.html"
-    index_template_file = html_dir / 'template' / 'base.html'
+    index_file_path = Path("html") / "index.html"
+    index_template_file = Path('template') / 'base.html'
     main_index = process_group_choice(sorted_articles, cmd_args.group)
     
     main_index_page = apply_main_index_template(main_index, index_template_file.read_text())
     index_file_path.write_text(render_page(main_index_page))
 
+    for category in group_articles(sorted_articles, GROUPING_STRATEGIES["category"]['group_function']):
+        print(category)
+
     for article in sorted_articles:
         article_page = apply_main_index_template(article.file.read_text(), index_template_file.read_text())
-        article.file.write_text(article_page)
+        (Path("html") / article.file.name).write_text(article_page)
 
 
 

@@ -103,5 +103,5 @@ def generate_unique_filename():
 
 
 def get_article_html_files(html_dir):
-    articles_dir = html_dir / "article"
+    articles_dir = html_dir
     return [html_file for html_file in articles_dir.glob("*.html")]
