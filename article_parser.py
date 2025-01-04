@@ -41,7 +41,7 @@ class ArticleParser(HTMLParser):
         #    self.article_title = data
 
     def to_named_tuple(self):
-        if self.metadata["published"]:
+        if self.metadata["published"] and not isinstance(self.metadata["published"], datetime):
             try:
                 self.metadata["published"] = datetime.strptime(
                     self.metadata["published"], "%m/%d/%Y %H:%M:%S")
