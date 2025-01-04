@@ -3,8 +3,9 @@ from datetime import datetime
 import random
 
 from article_parser import ArticleParser
-from file_utils import process_filename
+from file_utils import process_filename, get_article_html_files
 from article_list_utils import *
+from template_processor import *
 
 from pathlib import Path
 from shutil import move, copy2
@@ -18,19 +19,23 @@ def main():
     articles = process_files(html_dir)
 
     sorted_articles = sort_articles_by_published_time(articles)
-
     index_file_path = html_dir / "index.html"
+    index_template_file = html_dir / 'template' / 'base.html'
     main_index = process_group_choice(sorted_articles, cmd_args.group)
+    
+    main_index_page = apply_main_index_template(main_index, index_template_file.read_text())
+    index_file_path.write_text(render_page(main_index_page))
 
-    index_file_path.write_text(render_page(main_index))
+    for article in sorted_articles:
+        article_page = apply_main_index_template(article.file.read_text(), index_template_file.read_text())
+        article.file.write_text(article_page)
 
 
 
 
 def process_files(html_dir):
-    articles_dir = html_dir / "article/"
+    html_files = get_article_html_files(html_dir)
 
-    html_files = articles_dir.glob("*.html")
 
     articles = []
     for html_file in html_files:
@@ -38,7 +43,7 @@ def process_files(html_dir):
         html_parser = ArticleParser(html_file)
         html_parser.parse()
 
-        process_filename(html_parser.html_file, html_parser.metadata['title'])
+        html_parser.html_file = process_filename(html_parser.html_file, html_parser.metadata['title'])
         articles.append(html_parser.to_named_tuple())
 
     return articles

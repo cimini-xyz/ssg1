@@ -15,8 +15,10 @@ def insert(text, content, position, direction, side):
     bracket_offset = 1 ^ (direction ^ side)
     before_text = text[:index_pos + bracket_offset]
     after_text = text[index_pos + bracket_offset:]
-    padded_content = pad(content, "\n", direction, side)
-    return before_text + padded_content + after_text
+    return before_text + content + after_text
+
+def cut(text, start_tag_position, end_tag_position):
+    return text[:start_tag_position[0]] + text[end_tag_position[1] + 1:]
 
 def pad(content, char, direction, side):
     char_before = direction ^ side
@@ -25,3 +27,8 @@ def pad(content, char, direction, side):
     return pad_l + content + pad_r
 
 
+def apply_main_index_template(index_fragment, index_template):
+    tag = "/header"
+    insert_position = find_tag_start_end(index_template, tag)
+    index_fragment = pad(index_fragment, "\n", BEFORE, OUTSIDE)
+    return insert(index_template, index_fragment, insert_position, AFTER, OUTSIDE)

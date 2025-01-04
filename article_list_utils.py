@@ -14,11 +14,13 @@ def render_article_index(articles):
 
 
 def render_index(groups, timestamp):
-    lines = ["<ul class=\"articles\">"]
+    lines = [
+        "<h2>Posts</h2>\n"
+        "<ul class=\"articles\">"
+        ]
     for group in groups.keys():
-        print(group)
         if group != "":
-            lines.append(f"<h3>{group}</h3>")
+            lines.append(f"<h4>{group}</h4>")
         for article in groups[group]:
             lines.append(generate_index_list_item(article, timestamp))
     lines.append("</ul>")

@@ -11,10 +11,21 @@ GENERATED_FILENAMES = set()
 
 
 def process_filename(file, parsed_title):
+    file_out = file
     valid_filename_string = format_filename(parsed_title)
-    if not valid_filename_string == file.name and valid_filename_string:
-        file.rename(file.parent / valid_filename_string)
+    if (not valid_filename_string == file.name and valid_filename_string) and not is_generated_filename(file.name):
+        print("I am renaming the file oooo boy :)))")
+        print(file)
+        print(file.parent / valid_filename_string)
+        file_out = file.rename(file.parent / valid_filename_string)
+        print("Here is the updated filename :)")
+        print(file_out)
+        return file_out
+    return file_out
 
+def is_generated_filename(filename):
+    pattern = r"^article-\d{10}\.html$"
+    return re.match(pattern, filename)
 
 def format_filename(article_title):
     filename = ""
@@ -89,3 +100,8 @@ def generate_unique_filename():
             f"Failed to generate unique filename after {retry_limit} attempts")
     GENERATED_FILENAMES.add(filename)
     return filename
+
+
+def get_article_html_files(html_dir):
+    articles_dir = html_dir / "article"
+    return [html_file for html_file in articles_dir.glob("*.html")]
