@@ -22,12 +22,17 @@ def main():
     index_file_path = Path("html") / "index.html"
     index_template_file = Path('template') / 'base.html'
     main_index = process_group_choice(sorted_articles, cmd_args.group)
-    
     main_index_page = apply_main_index_template(main_index, index_template_file.read_text())
     index_file_path.write_text(render_page(main_index_page))
-
-    for category in group_articles(sorted_articles, GROUPING_STRATEGIES["category"]['group_function']):
-        print(category)
+    category_indices = generate_category_indices(sorted_articles)
+    category_indices_page = [
+        {
+            'output' : category_index['output'],
+            'render' : apply_main_index_template(category_index['render'], index_template_file.read_text())
+        } for category_index in category_indices
+    ]
+    for category_index_page in category_indices_page:
+        category_index_page['output'].write_text(category_index_page['render'])
 
     for article in sorted_articles:
         article_page = apply_main_index_template(article.file.read_text(), index_template_file.read_text())
@@ -38,14 +43,10 @@ def main():
 
 def process_files(html_dir):
     html_files = get_article_html_files(html_dir)
-
-
     articles = []
     for html_file in html_files:
-
         html_parser = ArticleParser(html_file)
         html_parser.parse()
-
         html_parser.html_file = process_filename(html_parser.html_file, html_parser.metadata['title'])
         articles.append(html_parser.to_named_tuple())
 

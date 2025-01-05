@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
-
+from pathlib import Path
 
 
 
@@ -107,3 +107,16 @@ def process_group_choice(articles, grouping_choice):
         strategy = GROUPING_STRATEGIES[grouping_choice]
     grouped_articles = group_articles(articles, strategy['group_function'])
     return render_index(grouped_articles, strategy['timestamp'])
+
+def generate_category_indices(articles):
+    strategy = GROUPING_STRATEGIES['category']
+    grouped_articles = group_articles(articles, strategy['group_function'])
+    output = []
+    for category in grouped_articles.keys():
+        group = {category : grouped_articles[category]}
+        output_path = Path(f"html/category/{category}.html") 
+        print(output_path)
+        output.append(
+            {'output': output_path, 'render' : render_index(group, strategy['timestamp'])}
+        )
+    return output   
