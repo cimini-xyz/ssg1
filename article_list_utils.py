@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-
+from article_parser import Article
 
 
 
@@ -44,7 +44,7 @@ def generate_index_list_item(article, timestamp_format=" – %b %-d %Y"):
     if article.published:
         published_strftime = article.published.strftime(timestamp_format)
     return (
-        f'<li><a href="{article.file.name}">'
+        f'<li><a href="{article.filename_reference}">'
         f'{article.title}</a>'
         f'{published_strftime}'
     )
@@ -108,9 +108,23 @@ def process_group_choice(articles, grouping_choice):
     grouped_articles = group_articles(articles, strategy['group_function'])
     return render_index(grouped_articles, strategy['timestamp'])
 
+def update_category_file_reference(filename):
+    return f"../{filename}"
+
 def generate_category_indices(articles):
     strategy = GROUPING_STRATEGIES['category']
-    grouped_articles = group_articles(articles, strategy['group_function'])
+    new_articles = [
+        Article(
+            article.file,
+            update_category_file_reference(article.filename_reference),
+            article.title,
+            article.published,
+            article.category
+            )
+        for article in articles
+        ]
+
+    grouped_articles = group_articles(new_articles, strategy['group_function'])
     output = []
     for category in grouped_articles.keys():
         group = {category : grouped_articles[category]}

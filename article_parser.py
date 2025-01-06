@@ -3,7 +3,7 @@ from collections import defaultdict, namedtuple
 from datetime import datetime
 
 Article = namedtuple(
-    'Article', ['file', 'title', 'published', 'category']
+    'Article', ['file', 'filename_reference', 'title', 'published', 'category']
 )
 
 
@@ -59,4 +59,4 @@ class ArticleParser(HTMLParser):
         self.format_metadata()
         print("Here is the file name when converting into output")
         print(self.html_file)
-        return Article(self.html_file, **self.metadata)
+        return Article(self.html_file, self.html_file.name, **self.metadata)
