@@ -24,15 +24,20 @@ def main():
     main_index = process_group_choice(sorted_articles, cmd_args.group)
     main_index_page = apply_main_index_template(main_index, index_template_file.read_text())
     index_file_path.write_text(render_page(main_index_page))
+    category_index_template = Path('template') / 'category.html'
     category_indices = generate_category_indices(sorted_articles)
     category_indices_page = [
         {
             'output' : category_index['output'],
-            'render' : apply_main_index_template(category_index['render'], index_template_file.read_text())
+            'render' : apply_main_index_template(category_index['render'], category_index_template.read_text())
         } for category_index in category_indices
     ]
     for category_index_page in category_indices_page:
         category_index_page['output'].write_text(category_index_page['render'])
+
+    categories = [category_index['category'] for category_index in category_indices]
+    
+    (Path("html/category/index.html")).write_text(apply_main_index_template(generate_categories_index(categories), category_index_template.read_text()))
 
     for article in sorted_articles:
         article_page = apply_main_index_template(article.file.read_text(), index_template_file.read_text())

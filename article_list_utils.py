@@ -3,8 +3,8 @@ from datetime import datetime
 from pathlib import Path
 from article_parser import Article
 
-
-
+BASE_HEADING = "<h2><a href='index.html'>Posts</a> <a href='category/index.html'> Categories</a></h2>\n"
+CATEGORY_HEADING = "<h2><a href='../index.html'>Posts</a> <a href='index.html'> Categories</a></h2>\n"
 def render_article_index(articles):
     lines = ["<ul class=\"articles\">"]
     for article in articles:
@@ -13,9 +13,9 @@ def render_article_index(articles):
     return "\n".join(lines)
 
 
-def render_index(groups, timestamp):
+def render_index(groups, timestamp, heading=BASE_HEADING):
     lines = [
-        "<h2>Posts</h2>\n"
+        heading,
         "<ul class=\"articles\">"
         ]
     for group in groups.keys():
@@ -38,7 +38,7 @@ def render_page(content):
 </html>
 """
 
-
+#not generalized enough, should take article fields as parameters
 def generate_index_list_item(article, timestamp_format=" – %b %-d %Y"):
     published_strftime = ""
     if article.published:
@@ -131,6 +131,25 @@ def generate_category_indices(articles):
         output_path = Path(f"html/category/{category}.html") 
         print(output_path)
         output.append(
-            {'output': output_path, 'render' : render_index(group, strategy['timestamp'])}
+            {'category': category, 'output': output_path, 'render' : render_index(group, strategy['timestamp'], CATEGORY_HEADING)}
         )
     return output   
+
+def generate_articles_per_category_index():
+    pass
+
+def generate_categories_index(categories):
+    lines = [
+        CATEGORY_HEADING,
+        "<ul class=\"categories\">"
+        ]
+    
+    for category in categories:
+        lines.append((
+            f'<li><a href="{category}.html">'
+            f'{category}</a>'
+        ))
+
+    lines.append("</ul>")
+    return "\n".join(lines)
+
