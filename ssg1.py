@@ -8,7 +8,6 @@ from article_list_utils import *
 from template_processor import *
 
 from pathlib import Path
-from shutil import move, copy2
 from collections import namedtuple, defaultdict
 import argparse
 
