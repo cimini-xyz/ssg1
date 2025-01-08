@@ -71,6 +71,5 @@ def parse_arguments():
     )
     return arg_parser.parse_args()
 
-
-
-main()
+if __name__ == "__main__":
+    main()
